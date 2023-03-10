@@ -58,6 +58,7 @@ class MotorCalcWindow(QMainWindow):
             tmpbox.setSuffix(" " + input_i[1])
             tmpbox.setRange(input_i[2], input_i[3])
             tmpbox.setDecimals(int(max(0, -np.log10(input_i[4]))))
+            tmpbox.setSingleStep(input_i[4])
             inputsLayout.addRow(input_i[0], tmpbox)
         self.generalLayout.addLayout(inputsLayout)
 
@@ -65,7 +66,9 @@ class MotorCalcWindow(QMainWindow):
     def _createButtons(self):
         self.buttonMap = {}
         buttonsLayout = QVBoxLayout()
-        buttonsLayout.addWidget(QPushButton("Calculate"))
+        button = QPushButton("Calculate")
+        button.clicked.connect(self.calculateCurves)
+        buttonsLayout.addWidget(button)
         self.generalLayout.addLayout(buttonsLayout)
 
     def setStatusText(self, text):
@@ -77,6 +80,9 @@ class MotorCalcWindow(QMainWindow):
     
     def clearStatus(self):
         self.setStatusText("")
+
+    def calculateCurves(self):
+        self.setStatusText("Calculating...")
 
 if __name__ == "__main__":
     """Main function"""
