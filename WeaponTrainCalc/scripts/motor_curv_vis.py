@@ -17,7 +17,7 @@ class MotorModel:
 
     def velocity(self, t:np.matrix, I:np.matrix) -> np.matrix:
         # m/s
-        return a/b * (1 - np.exp(-b * np.divide(t,I)))
+        return self.a/self.b * (1 - np.exp(-b * np.divide(t,I)))
     
     def energy(self, t:np.matrix, I:np.matrix) -> np.matrix:
         # kg * (m/s)^2
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     t_arr = np.linspace(0.0, 5.0, 30)
     I_arr = np.logspace(-5, -3, 30)
-    t_mat, I_mat = np.meshgrid(t_arr, I_arr)
+    I_mat, t_mat = np.meshgrid(I_arr, t_arr)
     velo_mat = motor_model.energy(t_mat, I_mat)
 
     # Plot the surface.

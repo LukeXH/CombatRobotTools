@@ -14,8 +14,15 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QPushButton,
     QVBoxLayout,
+    QHBoxLayout,
     QWidget,
 )
+
+# Import our files
+from os.path import dirname, abspath
+src_dir_str = dirname(abspath(__file__))
+sys.path.append(src_dir_str + '/../src/')
+import GenerateGraphs
 
 WINDOW_SIZE = 400
 STATUS_BAR_HEIGHT = 35
@@ -27,7 +34,9 @@ class MotorCalcWindow(QMainWindow):
         self.setWindowTitle("MotorParamCalc")
         self.setFixedSize(WINDOW_SIZE, WINDOW_SIZE)
         self.generalLayout = QVBoxLayout()
+        self.input_boxes = {}
         centralWidget = QWidget(self)
+        self.weaponSys = GenerateGraphs.WeaponSysModel()
         centralWidget.setLayout(self.generalLayout)
         self.setCentralWidget(centralWidget)
         self._createStatus()
@@ -50,25 +59,30 @@ class MotorCalcWindow(QMainWindow):
             ["Motor Kv", "rpm/V", 0.0, 20000.0, 10],
             ["Max Stall Current", "A", 0.0, 100.0, 0.01],
             ["Max Voltage at Stall", "V", 0.0, 200.0, 0.01],
-            ["Operational Voltage", "V", 0.0, 200.0, 0.01]
+            ["Operational Voltage", "V", 0.0, 200.0, 0.01],
+            ["Target Gear Ratio", "", 0.0, 10.0, 0.01],
+            ["Target Spin-up Time", "sec", 0.0, 10.0, 0.01]
         ]
 
         for input_i in input_fields:
-            tmpbox = QDoubleSpinBox()
-            tmpbox.setSuffix(" " + input_i[1])
-            tmpbox.setRange(input_i[2], input_i[3])
-            tmpbox.setDecimals(int(max(0, -np.log10(input_i[4]))))
-            tmpbox.setSingleStep(input_i[4])
-            inputsLayout.addRow(input_i[0], tmpbox)
+            self.input_boxes[input_i[0]] = QDoubleSpinBox()
+            self.input_boxes[input_i[0]].setSuffix(" " + input_i[1])
+            self.input_boxes[input_i[0]].setRange(input_i[2], input_i[3])
+            self.input_boxes[input_i[0]].setDecimals(int(max(0, -np.log10(input_i[4]))))
+            self.input_boxes[input_i[0]].setSingleStep(input_i[4])
+            inputsLayout.addRow(input_i[0], self.input_boxes[input_i[0]])
         self.generalLayout.addLayout(inputsLayout)
 
 
     def _createButtons(self):
         self.buttonMap = {}
-        buttonsLayout = QVBoxLayout()
-        button = QPushButton("Calculate")
-        button.clicked.connect(self.calculateCurves)
-        buttonsLayout.addWidget(button)
+        buttonsLayout = QHBoxLayout()
+        button_close = QPushButton("Close All Graphs")
+        button_calc = QPushButton("Calculate")
+        button_close.clicked.connect(self.closeAllGraphs)
+        button_calc.clicked.connect(self.calculateCurves)
+        buttonsLayout.addWidget(button_close)
+        buttonsLayout.addWidget(button_calc)
         self.generalLayout.addLayout(buttonsLayout)
 
     def setStatusText(self, text):
@@ -83,6 +97,25 @@ class MotorCalcWindow(QMainWindow):
 
     def calculateCurves(self):
         self.setStatusText("Calculating...")
+        print(self.input_boxes["Motor Kv"].value())
+        print(self.input_boxes["Max Stall Current"].value())
+        print(self.input_boxes["Max Voltage at Stall"].value())
+        print(self.input_boxes["Operational Voltage"].value())
+        self.weaponSys.initMotorModel(self.input_boxes["Motor Kv"].value(),
+                                      self.input_boxes["Max Stall Current"].value(),
+                                      self.input_boxes["Max Voltage at Stall"].value(),
+                                      self.input_boxes["Operational Voltage"].value())
+        print(self.input_boxes["Target Spin-up Time"].value())
+        print(self.input_boxes["MoI of Weapon"].value())
+        print(self.input_boxes["Target Gear Ratio"].value())
+        self.weaponSys.displayGraphs(self.input_boxes["Target Spin-up Time"].value(),
+                                     self.input_boxes["MoI of Weapon"].value(),
+                                     self.input_boxes["Target Gear Ratio"].value())
+        # self.weaponSys.initMotorModel()
+
+    def closeAllGraphs(self):
+        # print('Closing all graphs')
+        self.weaponSys.closeGraphs()
 
 if __name__ == "__main__":
     """Main function"""
