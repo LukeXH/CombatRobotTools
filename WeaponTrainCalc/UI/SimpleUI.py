@@ -55,13 +55,13 @@ class MotorCalcWindow(QMainWindow):
         """"""
         inputsLayout = QFormLayout()
         input_fields = [
-            ["MoI of Weapon", "kg-m^2", 0.0, 10.0, 1e-7],
-            ["Motor Kv", "rpm/V", 0.0, 20000.0, 10],
-            ["Max Stall Current", "A", 0.0, 100.0, 0.01],
-            ["Max Voltage at Stall", "V", 0.0, 200.0, 0.01],
-            ["Operational Voltage", "V", 0.0, 200.0, 0.01],
-            ["Target Gear Ratio", "", 0.0, 10.0, 0.01],
-            ["Target Spin-up Time", "sec", 0.0, 10.0, 0.01]
+            ["MoI of Weapon", "kg-m^2", 0.0, 10.0, 1e-7, 0.00056],
+            ["Motor Kv", "rpm/V", 0.0, 20000.0, 10, 900],
+            ["Max Stall Current", "A", 0.0, 100.0, 0.01, 37],
+            ["Max Voltage at Stall", "V", 0.0, 200.0, 0.01, 14.8],
+            ["Operational Voltage", "V", 0.0, 200.0, 0.01, 11.1],
+            ["Target Gear Ratio", "", 0.0, 10.0, 0.01, 0.8],
+            ["Target Spin-up Time", "sec", 0.0, 10.0, 0.01, 4.0]
         ]
 
         for input_i in input_fields:
@@ -70,6 +70,7 @@ class MotorCalcWindow(QMainWindow):
             self.input_boxes[input_i[0]].setRange(input_i[2], input_i[3])
             self.input_boxes[input_i[0]].setDecimals(int(max(0, -np.log10(input_i[4]))))
             self.input_boxes[input_i[0]].setSingleStep(input_i[4])
+            self.input_boxes[input_i[0]].setValue( input_i[5] )
             inputsLayout.addRow(input_i[0], self.input_boxes[input_i[0]])
         self.generalLayout.addLayout(inputsLayout)
 
@@ -111,6 +112,7 @@ class MotorCalcWindow(QMainWindow):
         self.weaponSys.displayGraphs(self.input_boxes["Target Spin-up Time"].value(),
                                      self.input_boxes["MoI of Weapon"].value(),
                                      self.input_boxes["Target Gear Ratio"].value())
+        self.setStatusText("Done!")
         # self.weaponSys.initMotorModel()
 
     def closeAllGraphs(self):
