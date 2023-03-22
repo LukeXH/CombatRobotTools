@@ -60,7 +60,7 @@ class WeaponSysModel:
         v_wep = np.multiply(np.divide(1.0, g),self.motorM.velocity(t,I_ref))
         return 0.5 * np.multiply(I, np.multiply(v_wep, v_wep))
 
-    def displayGraphs(self, t_target, weapon_moi, gear_ratio):
+    def displayGraphs(self, t_target, weapon_moi, gear_ratio) -> float:
         """ Create the graph of energy for 
                 t_target = sec, time target for spinup
                 weapon_moi = kg * m^2
@@ -81,10 +81,17 @@ class WeaponSysModel:
         energy_line_for_t = self.energy(t_arr, weapon_moi, gear_ratio)
         energy_line_for_I = self.energy(t_target, I_arr, gear_ratio)
 
+        # Energy graph for fixed time
         I_mat2, g_mat = np.meshgrid(I_arr, g_arr)
         energy_mat_gI = self.energy(t_target, I_mat2, g_mat)
         energy_line_gI_for_g = self.energy(t_target, weapon_moi, g_arr)
         energy_line_gI_for_I = self.energy(t_target, I_arr, gear_ratio)
+
+        # Energy graph for fixed MoI
+        g_mat3, t_mat3 = np.meshgrid(g_arr, t_arr)
+        energy_mat_gt = self.energy(t_mat3, weapon_moi, g_mat3)
+        energy_line_gt_for_g = self.energy(t_target, weapon_moi, g_arr)
+        energy_line_gt_for_t = self.energy(t_arr, weapon_moi, gear_ratio)
 
         # Plot the surface for the energy graph
         fig1, ax1 = plt.subplots(subplot_kw={"projection": "3d"})
@@ -97,7 +104,7 @@ class WeaponSysModel:
         ax1.set_xlabel("MoI (kg-m^2)")
         ax1.set_ylabel("Time (sec)")
         ax1.set_zlabel("Energy (J)")
-        ax1.set_title("Energy Graph")
+        ax1.set_title("Energy Graph for fixed gear ratio (out:in): " + str(gear_ratio))
 
         # Plot the surface for the velocity graph
         fig2, ax2 = plt.subplots(subplot_kw={"projection": "3d"})
@@ -109,7 +116,7 @@ class WeaponSysModel:
         ax2.set_xlabel("MoI (kg-m^2)")
         ax2.set_ylabel("Time (sec)")
         ax2.set_zlabel("Velocity (rad/sec)")
-        ax2.set_title("Velocity Graph")
+        ax2.set_title("Velocity Graph for fixed gear ratio (out:in): " + str(gear_ratio))
         
         # Plot the surface for the energy graph for fixed time
         fig3, ax3 = plt.subplots(subplot_kw={"projection": "3d"})
@@ -123,7 +130,21 @@ class WeaponSysModel:
         ax3.set_zlabel("Energy (J)")
         ax3.set_title("Energy Graph for fixed time: " + str(t_target))
 
+        # Plot the surface for the energy graph for fixed MoI
+        fig4, ax4 = plt.subplots(subplot_kw={"projection": "3d"})
+        self.figs.append(fig4)
+        surf = ax4.plot_surface(g_mat3, t_mat3, energy_mat_gt, cmap=cm.coolwarm,
+                            linewidth=0, antialiased=False)
+        ax4.plot(g_arr, t_target*np.ones(g_arr.size), energy_line_gt_for_g, 'k', linewidth=4, zorder=3) # No clue why zorder has to be 3...
+        ax4.plot(gear_ratio*np.ones(t_arr.size), t_arr, energy_line_gt_for_t, 'k', linewidth=4, zorder=3) # No clue why zorder has to be 3...
+        ax4.set_xlabel("gear ratio (out:in)")
+        ax4.set_ylabel("Time (sec)")
+        ax4.set_zlabel("Energy (J)")
+        ax4.set_title("Energy Graph for MoI: " + str(weapon_moi))
+
         plt.show()
+
+        return (self.energy(t_target, weapon_moi, gear_ratio), self.velocity(t_target, weapon_moi, gear_ratio))
 
     def closeGraphs(self):
         # print('Closing all graphs inside')

@@ -60,7 +60,7 @@ class MotorCalcWindow(QMainWindow):
             ["Max Stall Current", "A", 0.0, 100.0, 0.01, 37],
             ["Max Voltage at Stall", "V", 0.0, 200.0, 0.01, 14.8],
             ["Operational Voltage", "V", 0.0, 200.0, 0.01, 11.1],
-            ["Target Gear Ratio", "", 0.0, 10.0, 0.01, 0.8],
+            ["Target Gear Ratio", "(out:in)", 0.0, 10.0, 0.01, 0.8],
             ["Target Spin-up Time", "sec", 0.0, 10.0, 0.01, 4.0]
         ]
 
@@ -109,10 +109,10 @@ class MotorCalcWindow(QMainWindow):
         print(self.input_boxes["Target Spin-up Time"].value())
         print(self.input_boxes["MoI of Weapon"].value())
         print(self.input_boxes["Target Gear Ratio"].value())
-        self.weaponSys.displayGraphs(self.input_boxes["Target Spin-up Time"].value(),
+        energy, velocity = self.weaponSys.displayGraphs(self.input_boxes["Target Spin-up Time"].value(),
                                      self.input_boxes["MoI of Weapon"].value(),
                                      self.input_boxes["Target Gear Ratio"].value())
-        self.setStatusText("Done!")
+        self.setStatusText("Done! Results: {:.2f}J {:.2f}rad/sec".format(energy, velocity))
         # self.weaponSys.initMotorModel()
 
     def closeAllGraphs(self):
